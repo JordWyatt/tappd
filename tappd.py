@@ -1,12 +1,24 @@
 import requests
 import os
+import sys
 from elasticsearch import Elasticsearch
 
-token = os.environ["UNTAPPD_TOKEN"]
-username = os.environ["UNTAPPD_USERNAME"]
-es_host = os.environ["ES_HOST"]
-es_port = os.environ["ES_PORT"]
-index = os.getenv("ES_INDEX") or "untappd_checkins"
+
+try:
+    token = os.environ["UNTAPPD_TOKEN"]
+except KeyError:
+    print("The environment variable, 'UNTAPPD_TOKEN', was not found.")
+    sys.exit()
+
+try:
+    username = os.environ["UNTAPPD_USERNAME"]
+except KeyError:
+    print("The environment variable, 'UNTAPPD_USERNAME', was not found.")
+    sys.exit()
+
+es_host = os.getenv("ES_HOST", "localhost")
+es_port = os.getenv("ES_PORT", 9200)
+index = os.getenv("ES_INDEX", "untappd_checkins")
 
 
 def get_checkins(username, token):
