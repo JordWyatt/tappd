@@ -19,6 +19,9 @@ except KeyError:
 es_host = os.getenv("ES_HOST", "localhost")
 es_port = os.getenv("ES_PORT", 9200)
 index = os.getenv("ES_INDEX", "untappd_checkins")
+es_http_auth_enabled = os.getenv("ES_HTTP_AUTH_ENABLED", False)
+es_user = os.getenv("ES_HTTP_AUTH_USER")
+es_password = os.getenv("ES_HTTP_AUTH_PASSWORD")
 
 
 def get_checkins(username, token):
@@ -61,7 +64,11 @@ def get_last_id(checkins):
 
 
 def setup_elastic():
-    es = Elasticsearch([{'host': es_host, 'port': es_port}])
+
+    if es_http_auth_enabled:
+        es = Elasticsearch([{'host': es_host, 'port': es_port}], http_auth=(es_user, es_password))
+    else:
+        es = Elasticsearch([{'host': es_host, 'port': es_port}])
 
     if not es.indices.exists(index=index):
         es.indices.create(index=index)
