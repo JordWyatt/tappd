@@ -1,6 +1,7 @@
 import requests
 import os
 import sys
+from datetime import datetime
 from elasticsearch import Elasticsearch
 
 
@@ -36,7 +37,8 @@ def get_checkins(username, token):
         print(f"No checkins found for user: {username}")
         return
 
-    results = results + checkins
+    date_converted_checkins = [convert_dates(checkin) for checkin in checkins]
+    results = results + date_converted_checkins
     last_id = get_last_id(checkins)
 
     while last_id is not None:
@@ -46,7 +48,8 @@ def get_checkins(username, token):
         checkins = r_untappd["response"]["checkins"]["items"]
 
         if checkins:
-            results = results + checkins
+            date_converted_checkins = [convert_dates(checkin) for checkin in checkins]
+            results = results + date_converted_checkins
 
         last_id = get_last_id(checkins)
 
@@ -74,6 +77,18 @@ def setup_elastic():
         es.indices.create(index=index)
 
     return es
+
+def convert_dates(checkin):
+
+    checkin["created_at"] = datetime.strptime(checkin["created_at"], "%a, %d %b  %Y %X +0000").strftime("%Y/%m/%d %H:%M:%S")
+    fields = ["badges.items.created_at", "comments.items.created_at", "toasts.items.created_at"]
+    
+    for field in fields:
+        if field in checkin:
+            for index, item in enumerate(checkin[field]):
+                checkin[field][index] = datetime.strptime(string_date, "%a, %d %b  %Y %X +0000").strftime("%Y/%m/%d %H:%M:%S")
+    
+    return checkin
 
 
 es = setup_elastic()
