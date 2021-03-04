@@ -79,15 +79,15 @@ def setup_elastic():
     return es
 
 def convert_dates(checkin):
-
     checkin["created_at"] = datetime.strptime(checkin["created_at"], "%a, %d %b  %Y %X +0000").strftime("%Y/%m/%d %H:%M:%S")
-    fields = ["badges.items.created_at", "comments.items.created_at", "toasts.items.created_at"]
+    array_fields = ["badges", "comments", "toasts"]
     
-    for field in fields:
+    for field in array_fields:
         if field in checkin:
-            for index, item in enumerate(checkin[field]):
-                checkin[field][index] = datetime.strptime(string_date, "%a, %d %b  %Y %X +0000").strftime("%Y/%m/%d %H:%M:%S")
-    
+            for index, item in enumerate(checkin[field]["items"]):
+                date = checkin[field]["items"][index]["created_at"]
+                checkin[field]["items"][index]["created_at"] = datetime.strptime(date, "%a, %d %b  %Y %X +0000").strftime("%Y/%m/%d %H:%M:%S")
+                
     return checkin
 
 
